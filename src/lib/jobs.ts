@@ -15,6 +15,22 @@ export interface JobFilters {
 type JobFilterTarget = Pick<Job, 'slug' | 'department' | 'location'>;
 
 /**
+ * Return jobs whose titles contain the search query, ignoring letter case and
+ * without mutating the input.
+ *
+ * @param jobs - The roles to search.
+ * @param query - The title text to search for; an empty query matches all roles.
+ * @returns A new array containing roles whose titles match the query.
+ */
+export function searchJobsByTitle<T extends Pick<Job, 'title'>>(jobs: T[], query: string): T[] {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) {
+        return [...jobs];
+    }
+    return jobs.filter((job) => job.title.toLowerCase().includes(normalizedQuery));
+}
+
+/**
  * Return jobs matching the selected department and location without mutating the input.
  *
  * @param jobs - The roles to filter.

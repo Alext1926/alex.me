@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterJobs, sortByNewest, formatPostedDate } from './jobs';
+import { filterJobs, searchJobsByTitle, sortByNewest, formatPostedDate } from './jobs';
 import type { Job } from '../types/job';
 
 function makeJob(slug: string, postedDate: string): Job {
@@ -43,6 +43,26 @@ describe('filterJobs', () => {
 
     it('returns no jobs when nothing matches', () => {
         expect(filterJobs(jobs, { department: 'Finance', location: 'Remote' })).toEqual([]);
+    });
+});
+
+describe('searchJobsByTitle', () => {
+    const jobs = [
+        { ...makeJob('frontend', '2027-01-01'), title: 'Senior Frontend Engineer' },
+        { ...makeJob('analyst', '2027-01-02'), title: 'Financial Analyst' },
+        { ...makeJob('engineer', '2027-01-03'), title: 'Principal Software Engineer' },
+    ];
+
+    it('matches title text case-insensitively', () => {
+        expect(searchJobsByTitle(jobs, 'fRoNtEnD').map((job) => job.slug)).toEqual(['frontend']);
+    });
+
+    it('trims the query and returns all jobs when it is empty', () => {
+        expect(searchJobsByTitle(jobs, '  ')).toEqual(jobs);
+    });
+
+    it('returns no jobs when no title matches', () => {
+        expect(searchJobsByTitle(jobs, 'research')).toEqual([]);
     });
 });
 
