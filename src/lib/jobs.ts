@@ -7,7 +7,33 @@
  */
 import type { Job } from '../types/job';
 
-/** Return jobs sorted by posted date, newest first (does not mutate input). */
+export interface JobFilters {
+    department: string;
+    location: string;
+}
+
+type JobFilterTarget = Pick<Job, 'slug' | 'department' | 'location'>;
+
+/**
+ * Return jobs matching the selected department and location without mutating the input.
+ *
+ * @param jobs - The roles to filter.
+ * @param filters - The selected department and location; empty values are ignored.
+ * @returns A new array containing roles that match every selected filter.
+ */
+export function filterJobs<T extends JobFilterTarget>(jobs: T[], filters: JobFilters): T[] {
+    return jobs.filter((job) =>
+        (!filters.department || job.department === filters.department) &&
+        (!filters.location || job.location === filters.location),
+    );
+}
+
+/**
+ * Return jobs sorted by posted date, newest first.
+ *
+ * @param jobs - The roles to sort.
+ * @returns A new array sorted from newest to oldest without mutating the input.
+ */
 export function sortByNewest(jobs: Job[]): Job[] {
     return [...jobs].sort(
         (a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime(),
@@ -17,6 +43,9 @@ export function sortByNewest(jobs: Job[]): Job[] {
 /**
  * Format an ISO-8601 date as a human-readable posted date,
  * e.g. "January 5, 2027". Falls back to the raw value if unparseable.
+ *
+ * @param iso - The date string to format.
+ * @returns The formatted date, or the original value when it is unparseable.
  */
 export function formatPostedDate(iso: string): string {
     const date = new Date(iso);

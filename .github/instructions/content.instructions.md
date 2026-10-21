@@ -20,6 +20,8 @@ Helpers in `src/lib/jobs.ts` should operate on plain `Job[]` arrays, not on `get
 
 Keep helper parameters and return values explicit. Helpers such as `sortByNewest`, `formatPostedDate`, filters, pagination, and derived values should be deterministic and easy to unit-test without the Astro runtime.
 
+Document every exported helper with TSDoc that explains its behavior. Include `@param` tags for each parameter and an `@returns` tag describing the result, including whether the helper mutates its input.
+
 ## Types
 
 Use `src/types/job.ts` as the shared plain TypeScript model for role helpers and components. Avoid importing Astro content collection types into lower-level helpers unless a page-level adapter needs them.
