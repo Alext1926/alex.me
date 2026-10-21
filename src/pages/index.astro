@@ -40,7 +40,16 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
           <h3 id="role-filters-heading" class="text-lg font-medium text-slate-100 mb-3">
             Filter roles
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end">
+            <label class="block text-sm text-slate-300">
+              Search by title
+              <input
+                type="search"
+                class="mt-1 block w-full rounded border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+                placeholder="e.g. Engineer"
+                data-testid="role-search"
+              />
+            </label>
             <label class="block text-sm text-slate-300">
               Department
               <select
@@ -71,19 +80,20 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
           </div>
         </section>
 
-        <div
+        <section
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           data-testid="roles-grid"
+          aria-label="Open roles results"
         >
           {jobs.map((job) => <RoleCard job={job} />)}
-        </div>
+        </section>
         <p
           class="mt-6 text-sm text-slate-400"
           data-testid="filter-empty-state"
           role="status"
           hidden
         >
-          No roles match these filters. Try changing or resetting your filters.
+          No open roles match your search and filters. Try changing or resetting them.
         </p>
       </>
     )}
@@ -91,7 +101,7 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
 </Layout>
 
 <script>
-  import { filterJobs } from '../lib/jobs';
+  import { filterJobs, searchJobsByTitle } from '../lib/jobs';
 
   const rolesGrid = document.querySelector<HTMLElement>('[data-testid="roles-grid"]');
   const departmentFilter = document.querySelector<HTMLSelectElement>(
@@ -100,6 +110,9 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
   const locationFilter = document.querySelector<HTMLSelectElement>(
     '[data-testid="location-filter"]',
   );
+  const titleSearch = document.querySelector<HTMLInputElement>(
+    '[data-testid="role-search"]',
+  );
   const resetButton = document.querySelector<HTMLButtonElement>(
     '[data-testid="reset-filters"]',
   );
@@ -107,19 +120,20 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
     '[data-testid="filter-empty-state"]',
   );
 
-  if (rolesGrid && departmentFilter && locationFilter && resetButton && emptyState) {
+  if (rolesGrid && titleSearch && departmentFilter && locationFilter && resetButton && emptyState) {
     const roleCards = Array.from(
       rolesGrid.querySelectorAll<HTMLElement>('[data-testid="role-card"]'),
     );
     const jobs = roleCards.map((card) => ({
       slug: card.dataset.jobId ?? '',
+      title: card.querySelector('[data-testid="role-title"]')?.textContent?.trim() ?? '',
       department: card.dataset.department ?? '',
       location: card.dataset.location ?? '',
     }));
 
     const updateVisibleRoles = () => {
       const matchingSlugs = new Set(
-        filterJobs(jobs, {
+        filterJobs(searchJobsByTitle(jobs, titleSearch.value), {
           department: departmentFilter.value,
           location: locationFilter.value,
         }).map((job) => job.slug),
@@ -131,9 +145,11 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
       emptyState.hidden = matchingSlugs.size > 0;
     };
 
+    titleSearch.addEventListener('input', updateVisibleRoles);
     departmentFilter.addEventListener('change', updateVisibleRoles);
     locationFilter.addEventListener('change', updateVisibleRoles);
     resetButton.addEventListener('click', () => {
+      titleSearch.value = '';
       departmentFilter.value = '';
       locationFilter.value = '';
       updateVisibleRoles();
