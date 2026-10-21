@@ -40,7 +40,15 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
           <h3 id="role-filters-heading" class="text-lg font-medium text-slate-100 mb-3">
             Filter roles
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-4 items-end">
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end">
+            <label class="block text-sm text-slate-300">
+              Search by title
+              <input
+                type="search"
+                class="mt-1 block w-full rounded border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+                data-testid="role-search"
+              />
+            </label>
             <label class="block text-sm text-slate-300">
               Department
               <select
@@ -81,9 +89,10 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
           class="mt-6 text-sm text-slate-400"
           data-testid="filter-empty-state"
           role="status"
+          aria-live="polite"
           hidden
         >
-          No roles match these filters. Try changing or resetting your filters.
+          No roles match your title search and selected filters. Try changing or resetting them.
         </p>
       </>
     )}
@@ -91,9 +100,10 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
 </Layout>
 
 <script>
-  import { filterJobs } from '../lib/jobs';
+  import { filterJobs, searchJobs } from '../lib/jobs';
 
   const rolesGrid = document.querySelector<HTMLElement>('[data-testid="roles-grid"]');
+  const roleSearch = document.querySelector<HTMLInputElement>('[data-testid="role-search"]');
   const departmentFilter = document.querySelector<HTMLSelectElement>(
     '[data-testid="department-filter"]',
   );
@@ -107,7 +117,7 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
     '[data-testid="filter-empty-state"]',
   );
 
-  if (rolesGrid && departmentFilter && locationFilter && resetButton && emptyState) {
+  if (rolesGrid && roleSearch && departmentFilter && locationFilter && resetButton && emptyState) {
     const roleCards = Array.from(
       rolesGrid.querySelectorAll<HTMLElement>('[data-testid="role-card"]'),
     );
@@ -115,14 +125,16 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
       slug: card.dataset.jobId ?? '',
       department: card.dataset.department ?? '',
       location: card.dataset.location ?? '',
+      title: card.dataset.title ?? '',
     }));
 
     const updateVisibleRoles = () => {
-      const matchingSlugs = new Set(
-        filterJobs(jobs, {
+      const departmentAndLocationMatches = filterJobs(jobs, {
           department: departmentFilter.value,
           location: locationFilter.value,
-        }).map((job) => job.slug),
+        });
+      const matchingSlugs = new Set(
+        searchJobs(departmentAndLocationMatches, roleSearch.value).map((job) => job.slug),
       );
 
       roleCards.forEach((card) => {
@@ -131,11 +143,13 @@ const locations = [...new Set(jobs.map((job) => job.location))].sort((a, b) =>
       emptyState.hidden = matchingSlugs.size > 0;
     };
 
+    roleSearch.addEventListener('input', updateVisibleRoles);
     departmentFilter.addEventListener('change', updateVisibleRoles);
     locationFilter.addEventListener('change', updateVisibleRoles);
     resetButton.addEventListener('click', () => {
       departmentFilter.value = '';
       locationFilter.value = '';
+      roleSearch.value = '';
       updateVisibleRoles();
     });
   }
