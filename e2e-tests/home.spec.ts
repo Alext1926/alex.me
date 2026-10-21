@@ -59,6 +59,43 @@ test.describe('Open roles listing', () => {
         await expect(visibleRoles).toHaveCount(expectedRoleCount);
     });
 
+    test('searches titles case-insensitively and combines with the other filters', async ({ page }) => {
+        await page.goto('/');
+        const visibleRoles = page.locator('[data-testid="role-card"]:visible');
+        const search = page.getByTestId('role-search');
+
+        await search.fill('fInAnCiAl aNaLySt');
+        const financialAnalyst = page.getByTestId('role-card').filter({
+            has: page.getByRole('heading', { name: 'Financial Analyst', exact: true }),
+        });
+        await expect(financialAnalyst).toBeVisible();
+        await expect(visibleRoles).toHaveCount(1);
+
+        await page.getByTestId('department-filter').selectOption('Finance');
+        await page.getByTestId('location-filter').selectOption('Woodinville, WA, USA');
+        await expect(visibleRoles).toHaveCount(1);
+
+        await search.fill('');
+        await expect(visibleRoles).toHaveCount(1);
+        await page.getByTestId('reset-filters').click();
+        await expect(visibleRoles).toHaveCount(expectedRoleCount);
+    });
+
+    test('shows and clears the empty state for an unmatched title search', async ({ page }) => {
+        await page.goto('/');
+        const visibleRoles = page.locator('[data-testid="role-card"]:visible');
+        const emptyState = page.getByTestId('filter-empty-state');
+
+        await page.getByTestId('role-search').fill('No such role');
+        await expect(visibleRoles).toHaveCount(0);
+        await expect(emptyState).toBeVisible();
+        await expect(emptyState).toContainText('No roles match your title search and selected filters.');
+
+        await page.getByTestId('role-search').fill('');
+        await expect(visibleRoles).toHaveCount(expectedRoleCount);
+        await expect(emptyState).toBeHidden();
+    });
+
     test('shows an empty state when no roles match', async ({ page }) => {
         await page.goto('/');
         await page.getByTestId('department-filter').selectOption('Finance');

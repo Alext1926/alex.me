@@ -15,6 +15,22 @@ export interface JobFilters {
 type JobFilterTarget = Pick<Job, 'slug' | 'department' | 'location'>;
 
 /**
+ * Return jobs whose titles contain the query, ignoring case and surrounding whitespace.
+ *
+ * @param jobs - The roles to search.
+ * @param query - The title text to match; an empty or whitespace-only query matches all roles.
+ * @returns A new array containing matching roles without mutating the input.
+ */
+export function searchJobs<T extends Pick<Job, 'title'>>(jobs: T[], query: string): T[] {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) {
+        return [...jobs];
+    }
+
+    return jobs.filter((job) => job.title.toLowerCase().includes(normalizedQuery));
+}
+
+/**
  * Return jobs matching the selected department and location without mutating the input.
  *
  * @param jobs - The roles to filter.
