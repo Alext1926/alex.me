@@ -68,11 +68,11 @@ This repository is a GitHub template. When you create a new repository from it, 
 
 The workflow only runs on repositories created from the template (the `if: ${{ !github.event.repository.is_template }}` guard skips the template itself), and after creating the issues it removes itself and the `.github/bootstrap-issues/` folder in a cleanup commit so it never runs again.
 
-The starter intentionally leaves location labels off role cards while retaining location data and detail-page labels for the workshop warm-up. The **Filter roles by department and location** issue (`workshop:filtering`) starts the longer feature exercise. Filtering, the TSDoc instruction addition, the `quality-checks` skill's results formatting, and `.github/agents/qa.agent.md` are left for learners to implement.
+Role cards display each posting's location, and the home page can filter roles by department and location. The filters are implemented as pure helpers in `src/lib/jobs.ts`, with unit and Playwright coverage. The content instructions also require TSDoc for exported helpers, and the `quality-checks` skill documents how to report check results.
 
-The only bundled skill is `.github/skills/quality-checks/SKILL.md`. The starter includes no custom agents or MCP server configuration: learners configure Playwright MCP in Copilot CLI and create the QA agent during the workshop. GitHub MCP is built into Copilot CLI and needs no repository server configuration.
+The bundled `.github/skills/quality-checks/SKILL.md` covers lint, type checking, and unit tests. The `.github/agents/qa.agent.md` custom agent groups those checks with targeted Playwright validation. Playwright MCP is configured in the local Copilot CLI user settings, not in this repository; GitHub MCP is built into Copilot CLI and needs no repository server configuration.
 
-The `quality-checks` skill runs lint, type checking, and unit tests only, even for a general request to run tests and linters. Playwright E2E tests remain available separately and run in CI; browser observation with Playwright MCP is a later workshop exercise.
+The `quality-checks` skill runs lint, type checking, and unit tests only, even for a general request to run tests and linters. Playwright E2E tests remain a separate check and run in CI.
 
 ## Contributing
 

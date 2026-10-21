@@ -27,6 +27,7 @@ Use `getCollection('jobs')` in pages, map entries to plain `Job` objects, and pa
 ## Code standards
 
 - Use TypeScript with explicit parameter and return types on every exported function.
+- All new TypeScript should contain TSDocs comments for documentation purposes.
 - Prefer small, pure, single-purpose helpers in `src/lib/` that operate on plain arrays and are easy to unit-test.
 - Keep imports at the top of the file and use consistent 2-space indentation.
 - Name functions and variables descriptively; avoid abbreviations.
