@@ -32,9 +32,40 @@ describe('filterJobs', () => {
             .toEqual(['analyst', 'engineer']);
     });
 
+    it('filters by title without case sensitivity', () => {
+        const titledJobs = [
+            { ...jobs[0], title: 'Senior Frontend Engineer' },
+            { ...jobs[1], title: 'Financial Analyst' },
+            { ...jobs[2], title: 'Manufacturing Engineer' },
+        ];
+
+        expect(filterJobs(titledJobs, { department: '', location: '', title: 'fRontEnd' })
+            .map((job) => job.slug)).toEqual(['frontend']);
+    });
+
+    it('ignores surrounding whitespace in a title search', () => {
+        const titledJobs = [{ ...jobs[0], title: 'Senior Frontend Engineer' }];
+
+        expect(filterJobs(titledJobs, { department: '', location: '', title: '  frontend  ' }))
+            .toEqual(titledJobs);
+    });
+
     it('combines department and location filters', () => {
         expect(filterJobs(jobs, { department: 'Technology', location: 'New York' }).map((job) => job.slug))
             .toEqual(['engineer']);
+    });
+
+    it('combines title, department, and location filters', () => {
+        const titledJobs = [
+            { ...jobs[0], title: 'Senior Frontend Engineer' },
+            { ...jobs[2], title: 'Frontend Engineer' },
+        ];
+
+        expect(filterJobs(titledJobs, {
+            department: 'Technology',
+            location: 'Remote',
+            title: 'frontend',
+        }).map((job) => job.slug)).toEqual(['frontend']);
     });
 
     it('returns all jobs when filters are reset', () => {

@@ -14,6 +14,7 @@ const { job } = Astro.props;
     href={`/roles/${job.slug}`}
     class="group block bg-slate-800/60 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-slate-700/50 hover:border-blue-500/50 hover:shadow-blue-500/10 hover:shadow-xl transition-all duration-300 hover:translate-y-[-6px]"
     data-testid="role-card"
+    role="listitem"
     data-job-id={job.slug}
     data-department={job.department}
     data-location={job.location}

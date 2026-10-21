@@ -55,8 +55,49 @@ test.describe('Open roles listing', () => {
         await expect(visibleRoles).toHaveCount(1);
         await expect(visibleRoles.getByRole('heading', { name: 'Financial Analyst' })).toBeVisible();
 
+        await page.getByTestId('title-search').fill('analyst');
         await page.getByTestId('reset-filters').click();
+        await expect(page.getByTestId('title-search')).toHaveValue('');
         await expect(visibleRoles).toHaveCount(expectedRoleCount);
+    });
+
+    test('searches role titles as the input changes and restores results when cleared', async ({ page }) => {
+        await page.goto('/');
+        const visibleRoles = page.locator('[data-testid="role-card"]:visible');
+        const titleSearch = page.getByTestId('title-search');
+
+        await expect(page.getByLabel('Search by title')).toBeVisible();
+        await titleSearch.fill('fRoNtEnD');
+        await expect(visibleRoles).toHaveCount(1);
+        await expect(visibleRoles.getByRole('heading', { name: 'Senior Frontend Engineer' }))
+            .toBeVisible();
+
+        await titleSearch.clear();
+        await expect(visibleRoles).toHaveCount(expectedRoleCount);
+    });
+
+    test('combines title search with department and location filters', async ({ page }) => {
+        await page.goto('/');
+        const visibleRoles = page.locator('[data-testid="role-card"]:visible');
+
+        await page.getByTestId('title-search').fill('analyst');
+        await page.getByTestId('department-filter').selectOption('Finance');
+        await page.getByTestId('location-filter').selectOption('Woodinville, WA, USA');
+
+        await expect(visibleRoles).toHaveCount(1);
+        await expect(visibleRoles.getByRole('heading', { name: 'Financial Analyst' })).toBeVisible();
+    });
+
+    test('shows an empty state when the title search has no matches', async ({ page }) => {
+        await page.goto('/');
+        const titleSearch = page.getByTestId('title-search');
+
+        await titleSearch.fill('role title that does not exist');
+
+        await expect(page.locator('[data-testid="role-card"]:visible')).toHaveCount(0);
+        await expect(page.getByTestId('filter-empty-state')).toBeVisible();
+        await expect(page.getByTestId('filter-empty-state'))
+            .toContainText('No roles match your search and filters');
     });
 
     test('shows an empty state when no roles match', async ({ page }) => {

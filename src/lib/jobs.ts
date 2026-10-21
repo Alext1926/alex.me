@@ -10,19 +10,23 @@ import type { Job } from '../types/job';
 export interface JobFilters {
     department: string;
     location: string;
+    title?: string;
 }
 
-type JobFilterTarget = Pick<Job, 'slug' | 'department' | 'location'>;
+type JobFilterTarget = Pick<Job, 'slug' | 'title' | 'department' | 'location'>;
 
 /**
- * Return jobs matching the selected department and location without mutating the input.
+ * Return jobs matching every active title, department, and location filter without mutating the input.
  *
  * @param jobs - The roles to filter.
- * @param filters - The selected department and location; empty values are ignored.
+ * @param filters - The selected title, department, and location; empty values are ignored.
  * @returns A new array containing roles that match every selected filter.
  */
 export function filterJobs<T extends JobFilterTarget>(jobs: T[], filters: JobFilters): T[] {
+    const title = filters.title?.trim().toLowerCase() ?? '';
+
     return jobs.filter((job) =>
+        (!title || job.title.toLowerCase().includes(title)) &&
         (!filters.department || job.department === filters.department) &&
         (!filters.location || job.location === filters.location),
     );
